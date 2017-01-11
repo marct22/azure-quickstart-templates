@@ -3,27 +3,58 @@
 #Requires -Module Azure.Storage
 #Requires -Module AzureRM.Storage
 
+# remember, you can override these values by passing in -<parameter name> "value"
+#                   ex. Deploy-AzureResourceGroup.ps1 -ValidateOnly 
+# By default, ResourceGroupName = ArtifactStagingDirectory (minus .\ if you put it in), but you can
+#                                 override it via -ResourceGroupName "alternatename"
 Param(
     [string] [Parameter(Mandatory=$true)] $ArtifactStagingDirectory,
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] $ResourceGroupName = $ArtifactStagingDirectory.replace('.\',''), #remove .\ if present
+    [string] $ResourceGroupName = $ArtifactStagingDirectory.replace('.\',''), # Strip off the  '.\' if present
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = $ArtifactStagingDirectory + '\azuredeploy.json',
     [string] $TemplateParametersFile = $ArtifactStagingDirectory + '.\azuredeploy.parameters.json',
     [string] $DSCSourceFolder = $ArtifactStagingDirectory + '.\DSC',
-    [switch] $ValidateOnly
+    [switch] $ValidateOnly,
+    [switch] $ListDeployments,
+    [switch] $RemoveSpecificDeploy,
+    [string] $DeployName,
+    [switch] $DeleteEverything,
+    [switch] $Help
 #    [string] $DebugOptions = "None"
 )
 
 Import-Module Azure -ErrorAction SilentlyContinue
+
 
 try {
     [Microsoft.Azure.Common.Authentication.AzureSession]::ClientFactory.AddUserAgent("VSAzureTools-$UI$($host.name)".replace(" ","_"), "AzureRMSamples")
 } catch { }
 
 Set-StrictMode -Version 3
+
+if ($Help) {
+    Write-Output "Help!" 
+    Write-Output " "
+    Write-Output "Note: ResourceGroupName is by default identical to ArtifactStagingDirectory, but you CAN overwrite it via"
+    Write-Output "                          -ResourceGroupName `"<another name>`""
+    Write-Output " "
+    Write-Output "ArtifactStagingDirectory: This is just the subfolder you wish to deploy from, which contains the json files"
+    Write-Output "                          and optional artifacts. REQUIRED"
+    Write-Output "                          Ex. -ArtifactStagingDirectory .\iis-2vm-sql-1vm"
+    Write-Output "ResourceGroupLocation:    This is the Azure Location (like westus for West US location. REQUIRED"
+    Write-Output "                          Ex. -ResourceGroupLocation `"westus`""
+    Write-Output "ValidateOnly:             This validates the json template files are correct. That is all it does."
+    Write-Output "                          Ex. -ValidateOnly"
+    Write-Output "ListDeployments:          This lists specific deployments on a specific Azure Resource Group and their status"
+    Write-Output "                          Ex. -ListDeployments"
+
+    exit 1
+}
+
+Write-Output "INFO: This will use the azure resource group named $ResourceGroupName, creating it if it doesn't already exist"
 
 $OptionalParameters = New-Object -TypeName Hashtable
 <#
@@ -35,10 +66,15 @@ else{
     $OptionalParameters.Add('DeploymentDebugLogLevel', $DebugOptions)
 }
 #>
+# TemplateFile is the absolute path to azuredeploy.json
+# TemplateParameters is absolute path to azuredeploy.parameters.json
 $TemplateFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $TemplateFile))
 $TemplateParametersFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $TemplateParametersFile))
 
+
 if ($UploadArtifacts) {
+Write-Output "got uploadartifacts being non-zero $UploadArtifacts"
+
     # Convert relative paths to absolute paths if needed
     $ArtifactStagingDirectory = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $ArtifactStagingDirectory))
     $DSCSourceFolder = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $DSCSourceFolder))
@@ -124,16 +160,38 @@ if ($UploadArtifacts) {
 }
 
 # Create or update the resource group using the specified template file and template parameters file
+# INFO: resource group is going to be named the folder you passed in in ArtifactStagingDirectory
 New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop 
 
 if ($ValidateOnly) {
+    # this only validates that the template is good.
     Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
                                         -TemplateFile $TemplateFile `
                                         -TemplateParameterFile $TemplateParametersFile `
                                         @OptionalParameters `
                                         -Verbose
-}
-else {
+} elseif ($ListDeployments) {
+    Write-Output "Listing the Deloyments in Resource group ${ResourceGroupName}."
+    Write-Output "If you want to remove a specific deployment, you can run "
+    Write-Output "  Deploy-AzureResourceGroup.ps1 -ResourceGroupLocation $ResourceGroupLocation -ArtifactStagingDirectory $ArtifactStagingDirectory -RemoveSpecificDeploy -DeployName <name of deploy>"
+    Get-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName 
+                                           
+} elseif ($RemoveSpecificDeploy) {
+    Write-Output "This will remove the specific $RemoveSpecificDeploymentName deployment in Resource group ${ResourceGroupName}."
+    Write-Output "To see a list of the deployments, run Deploy-AzureResourceGroup.pl1 -ResourceGroupLocation $ResourceGroupLocation -ArtifactStagingDirectory $ArtifactStagingDirectory -ListDeployments"
+    Remove-AzureRmResourceGroupDeployment -Name $DeployName `
+                                          -ResourceGroupName $ResourceGroupName `
+                                          -Confirm 
+} elseif ($DeleteEverything) {
+    Write-Output "This will remove the specific Azure Resource Group $ResourceGroupName, which deletes everything created on it,"
+    Write-Output "such as virtual networks, VMs, storage areas, network configurations, load balancers, etc. A handy way to "
+    Write-Output "delete entire environments and all it's associated metadata."
+    
+    Remove-AzureRmResourceGroup -ResourceGroupName $ResourceGroupName `
+                                          -Confirm                                            
+} else {
+    Write-Output "This will now create (if necessary) the various azure items as specified in $TemplateFile"
+    
     New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
                                        -ResourceGroupName $ResourceGroupName `
                                        -TemplateFile $TemplateFile `

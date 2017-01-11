@@ -7,7 +7,7 @@
       "metadata": {
         "description": "Prefix for the environment (2-5 characters)"
       },
-      "defaultValue": "cust1",
+      "defaultValue": "dev1",
       "minLength": 2,
       "maxLength": 5
     },
@@ -38,7 +38,7 @@
       "metadata": {
         "description": "The size of the Web Server VMs Created"
       },
-      "defaultValue": "Standard_DS2"
+      "defaultValue": "Standard_DS1"
     },
     "numberOfWebSrvs": {
       "type": "int",
@@ -66,7 +66,7 @@
       "metadata": {
         "description": "The size of the SQL VM Created"
       },
-      "defaultValue": "Standard_DS3"
+      "defaultValue": "Standard_DS1"
     },
     "storageAccountType": {
       "type": "string",
@@ -79,7 +79,7 @@
       "metadata": {
         "description": "The type of the Storage Account created"
       },
-      "defaultValue": "Premium_LRS"
+      "defaultValue": "Standard_LRS"
     }
   },
   "variables": {
@@ -90,8 +90,8 @@
     "addressPrefix": "10.0.0.0/16",
     "feSubnetPrefix": "10.0.0.0/24",
     "dbSubnetPrefix": "10.0.2.0/24",
-    "feNSGName": "feNsg",
-    "dbNSGName": "dbNsg",
+    "feNSGName": "[concat(parameters('envPrefixName'), 'feNsg')]",
+    "dbNSGName": "[concat(parameters('envPrefixName'), 'dbNsg')]",
     "sqlSrvDBName": "[concat(parameters('envPrefixName'), 'sqlSrv14')]",
     "sqlVmSize": "[parameters('sqlVMSize')]",
     "sqlSrvDBOsDiskName": "[concat(parameters('envPrefixName'), 'DBSrvOS')]",
@@ -102,7 +102,7 @@
     "sqlPublicIP": "[concat(parameters('envPrefixName'), 'SqlPip')]",
     "sqlPublicIPRef": "[resourceId('Microsoft.Network/publicIPAddresses', variables('sqlPublicIP'))]",
     "sqlImagePublisher": "MicrosoftSQLServer",
-    "sqlImageOffer": "SQL2014-WS2012R2",
+    "sqlImageOffer": "SQL2012SP2-WS2012R2",
     "sqlImageSku": "Standard",
     "webSrvName": "[concat(parameters('envPrefixName'), 'webSrv')]",
     "webSrvVMSize": "[parameters('webSrvVMSize')]",
@@ -330,7 +330,7 @@
       }
     },
     {
-      "name": "[concat(parameters('envPrefixName'), 'sqlSrv14')]",
+      "name": "[concat(parameters('envPrefixName'), 'sqlSrv12')]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "[variables('apiVersion')]",

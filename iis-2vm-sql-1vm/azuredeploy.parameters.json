@@ -3,13 +3,13 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "envPrefixName": {
-      "value": "cust1"
+      "value": "dev1"
     },
     "username": {
-      "value": "contoso"
+      "value": "marct"
     },
     "password": {
-      "value": "P!1#####"
+      "value": "P@ssw0rd123456"
     }
   }
 }
