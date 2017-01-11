@@ -50,6 +50,13 @@ if ($Help) {
     Write-Output "                          Ex. -ValidateOnly"
     Write-Output "ListDeployments:          This lists specific deployments on a specific Azure Resource Group and their status"
     Write-Output "                          Ex. -ListDeployments"
+    Write-Output "RemoveSpecificDeploy:     This removes a specific deploy attempt in a particular Azure resource group."
+    Write-Output "                          you MUST pass in the Deployment Name (usuallly named azuredeploy-MMDD-HHMM)"
+    Write-Output "                          Ex. -RemoveSpecificDeploy -DeployName `"<name of deploy>`""
+    Write-Output "DeleteEverything:         This deletes the Azure Resource Group and all metadata on that Resource Group, "
+    Write-Output "                          including VMs, Virtual networks, storage areas, load balancers, etc."
+    Write-Output "                          Ex. -DeleteEverything"
+
 
     exit 1
 }
@@ -179,6 +186,7 @@ if ($ValidateOnly) {
 } elseif ($RemoveSpecificDeploy) {
     Write-Output "This will remove the specific $RemoveSpecificDeploymentName deployment in Resource group ${ResourceGroupName}."
     Write-Output "To see a list of the deployments, run Deploy-AzureResourceGroup.pl1 -ResourceGroupLocation $ResourceGroupLocation -ArtifactStagingDirectory $ArtifactStagingDirectory -ListDeployments"
+    Write-Output "or in Azure, in the specific Resource Group, click on "Deployments" and you can see the list of deployments"
     Remove-AzureRmResourceGroupDeployment -Name $DeployName `
                                           -ResourceGroupName $ResourceGroupName `
                                           -Confirm 
