@@ -54,7 +54,8 @@ if ($Help) {
     Write-Output "                          you MUST pass in the Deployment Name (usuallly named azuredeploy-MMDD-HHMM)"
     Write-Output "                          Ex. -RemoveSpecificDeploy -DeployName `"<name of deploy>`""
     Write-Output "DeleteEverything:         This deletes the Azure Resource Group and all metadata on that Resource Group, "
-    Write-Output "                          including VMs, Virtual networks, storage areas, load balancers, etc."
+    Write-Output "                          including VMs, Virtual networks, storage areas, load balancers, etc. It will"
+    Write-Output "                          delete even running VMs!"
     Write-Output "                          Ex. -DeleteEverything"
 
 
@@ -192,8 +193,8 @@ if ($ValidateOnly) {
                                           -Confirm 
 } elseif ($DeleteEverything) {
     Write-Output "This will remove the specific Azure Resource Group $ResourceGroupName, which deletes everything created on it,"
-    Write-Output "such as virtual networks, VMs, storage areas, network configurations, load balancers, etc. A handy way to "
-    Write-Output "delete entire environments and all it's associated metadata."
+    Write-Output "such as virtual networks, VMs (even if running), storage areas, network configurations, load balancers, etc. "
+    Write-Output "A handy way to delete entire environments and all it's associated metadata."
     
     Remove-AzureRmResourceGroup -ResourceGroupName $ResourceGroupName `
                                           -Confirm                                            
