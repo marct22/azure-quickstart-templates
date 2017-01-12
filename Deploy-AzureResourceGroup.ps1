@@ -9,6 +9,9 @@
 # 
 # By default, ResourceGroupName = ArtifactStagingDirectory (minus .\ if you put it in), but you can
 #                                 override it via -ResourceGroupName "alternatename"
+#
+# To see a list of the various azure Resource Group locations, run get-azureRmLocation, and use the value in 'Location :'
+#
 Param(
     [string] [Parameter(Mandatory=$true)] $ArtifactStagingDirectory,
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
@@ -170,7 +173,8 @@ Write-Output "got uploadartifacts being non-zero $UploadArtifacts"
 }
 
 # Create or update the resource group using the specified template file and template parameters file
-# INFO: resource group is going to be named the folder you passed in in ArtifactStagingDirectory
+# INFO: resource group is going to be named the folder you passed in in ArtifactStagingDirectory unless you
+#       manually overrode it by using -ResourceGrupName "<different name>"
 New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop 
 
 if ($ValidateOnly) {
