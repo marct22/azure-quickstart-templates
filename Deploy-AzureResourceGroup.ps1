@@ -3,8 +3,10 @@
 #Requires -Module Azure.Storage
 #Requires -Module AzureRM.Storage
 
-# remember, you can override these values by passing in -<parameter name> "value"
-#                   ex. Deploy-AzureResourceGroup.ps1 -ValidateOnly 
+# Remember, you can override these values by passing in -<parameter name> "value"
+#                   ex. Deploy-AzureResourceGroup.ps1 -RemoveSpecificDeploy "<deploy name>"
+# To see help, add in -Help as a parameter (order doesn't matter)
+# 
 # By default, ResourceGroupName = ArtifactStagingDirectory (minus .\ if you put it in), but you can
 #                                 override it via -ResourceGroupName "alternatename"
 Param(
@@ -44,7 +46,7 @@ if ($Help) {
     Write-Output "ArtifactStagingDirectory: This is just the subfolder you wish to deploy from, which contains the json files"
     Write-Output "                          and optional artifacts. REQUIRED"
     Write-Output "                          Ex. -ArtifactStagingDirectory .\iis-2vm-sql-1vm"
-    Write-Output "ResourceGroupLocation:    This is the Azure Location (like westus for West US location. REQUIRED"
+    Write-Output "ResourceGroupLocation:    This is the Azure Location (like westus for West US or northeurope location. REQUIRED"
     Write-Output "                          Ex. -ResourceGroupLocation `"westus`""
     Write-Output "ValidateOnly:             This validates the json template files are correct. That is all it does."
     Write-Output "                          Ex. -ValidateOnly"
