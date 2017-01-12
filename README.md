@@ -1,5 +1,16 @@
 # Azure Resource Manager QuickStart Templates
 
+For powershell, you have to be at least version 3.  To check, run (in powershell) $PSVersionTable
+
+These do require additional Powershell modules.  If you haven't installed them, run
+(in powershell as admin):
+install-module -Name AzureRM.Automation
+
+Then you have to log into Azure before running these scripts like Deploy-AzureResourceGroup.ps1.  Run
+ Login-AzureRmAccount
+Then enter your username and password
+
+
 This repo contains all currently available Azure Resource Manager templates contributed by the community. A searchable template index is maintained at https://azure.microsoft.com/en-us/documentation/templates/.
 The following information is relevant to get started with contributing to this repository.
 
