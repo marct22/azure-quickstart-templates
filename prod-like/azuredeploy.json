@@ -51,6 +51,17 @@
       ],
       "defaultValue": 1
     },
+    "numberOfDbSrvs": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of Db Servers"
+      },
+      "allowedValues": [
+        1,
+        2
+      ],
+      "defaultValue": 1
+    },
     "sqlVMSize": {
       "type": "string",
       "allowedValues": [
@@ -80,6 +91,23 @@
         "description": "The type of the Storage Account created"
       },
       "defaultValue": "Standard_LRS"
+    },
+    "utilSrvVMSize": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_DS1",
+        "Standard_DS2",
+        "Standard_DS3",
+        "Standard_DS4",
+        "Standard_DS11",
+        "Standard_DS12",
+        "Standard_DS13",
+        "Standard_DS14"
+      ],
+      "metadata": {
+        "description": "The size of the Util VM Created"
+      },
+      "defaultValue": "Standard_DS1"
     }
   },
   "variables": {
@@ -101,6 +129,7 @@
     "sqlSvrDBSubnetRef": "[concat(variables('vnetId'), '/subnets/', 'DBSubnetName')]",
     "sqlPublicIP": "[concat(parameters('envPrefixName'), 'SqlPip')]",
     "sqlPublicIPRef": "[resourceId('Microsoft.Network/publicIPAddresses', variables('sqlPublicIP'))]",
+    "sqlSrvNumbOfInstances": "[parameters('numberOfDbSrvs')]",
     "sqlImagePublisher": "MicrosoftSQLServer",
     "sqlImageOffer": "SQL2012SP2-WS2012R2",
     "sqlImageSku": "Standard",
@@ -122,7 +151,14 @@
     "lbProbeID": "[concat(variables('webLbId'),'/probes/tcpProbe')]",
     "vmExtensionName": "dscExtension",
     "modulesUrl": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/iis-2vm-sql-1vm/scripts/WebServerConfig.ps1.zip",
-    "configurationFunction": "WebServerConfig.ps1\\WebServerConfig"
+    "configurationFunction": "WebServerConfig.ps1\\WebServerConfig",
+    "utilSrvName": "[concat(parameters('envPrefixName'), 'utilSrv')]",
+    "utilSrvVMSize": "[parameters('utilSrvVMSize')]",
+    "utilSrvOSDiks": "[concat(parameters('envPrefixName'), 'utilSrvOS')]",
+    "utilSrvNicName": "[concat(variables('utilSrvName'), 'Nic')]",
+    "utilSrvSubnetRef": "[concat(variables('vnetId'), '/subnets/', 'FESubnetName')]",
+    "utilSrvPublicIP": "[concat(parameters('envPrefixName'), 'utilsrvPip')]",
+    "utilSrvPublicIPRef": "[resourceId('Microsoft.Network/publicIPAddresses', variables('utilSrvPublicIP'))]"
   },
   "resources": [
     {
@@ -367,6 +403,7 @@
             "createOption": "FromImage"
           }
         },
+
         "networkProfile": {
           "networkInterfaces": [
             {
@@ -524,6 +561,7 @@
                   "id": "[concat(variables('webLbId'),'/inboundNatRules/RDP-VM', copyindex())]"
                 }
               ]
+
             }
           }
         ]
@@ -612,6 +650,34 @@
           }
         },
         "protectedSettings": { }
+      }
+    },
+    {
+      "name": "[variables('utilSrvNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('apiVersion')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+      ],
+      "tags": {
+        "displayName": "UtilSrvNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('webSrvSubnetRef')]"
+              },
+              "publicIPAddress": {
+                "id": "[ variables('utilSrvPublicIpRef')]"
+              }
+            }
+          }
+        ]
       }
     }
   ]

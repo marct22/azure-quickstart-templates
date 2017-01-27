@@ -178,12 +178,13 @@ Write-Output "got uploadartifacts being non-zero $UploadArtifacts"
 New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop 
 
 if ($ValidateOnly) {
-    # this only validates that the template is good.
+    # this only validates that the template is good. ResourceGroupName has to exist in Azure though
     Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
                                         -TemplateFile $TemplateFile `
                                         -TemplateParameterFile $TemplateParametersFile `
                                         @OptionalParameters `
                                         -Verbose
+    
 } elseif ($ListDeployments) {
     Write-Output "Listing the Deloyments in Resource group ${ResourceGroupName}."
     Write-Output "If you want to remove a specific deployment, you can run "
