@@ -46,10 +46,11 @@
         "description": "Number of Web Servers"
       },
       "allowedValues": [
+        0,
         1,
         2
       ],
-      "defaultValue": 1
+      "defaultValue": 0
     },
     "numberOfDbSrvs": {
       "type": "int",
@@ -57,10 +58,11 @@
         "description": "Number of Db Servers"
       },
       "allowedValues": [
+        0,        
         1,
         2
       ],
-      "defaultValue": 1
+      "defaultValue": 0
     },
     "sqlVMSize": {
       "type": "string",
